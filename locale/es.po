@@ -1,0 +1,15 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "field:account.invoice.line,origin_date:"
+msgid "Origin Date"
+msgstr "Fecha origen"
+
+msgctxt "field:account.invoice.line,origin_reference:"
+msgid "Origin Reference"
+msgstr "Referencia origen"
+
+msgctxt "field:account.invoice.line,origin_shipment:"
+msgid "Shipment"
+msgstr "Albaran"
