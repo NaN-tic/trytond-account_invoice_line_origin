@@ -76,7 +76,7 @@ class InvoiceLine(metaclass=PoolMeta):
             PurchaseLine = pool.get('purchase.line')
             Purchase = pool.get('purchase.purchase')
         except:
-            pass
+            Purchase = None
 
         invoice_type = Transaction().context.get('invoice_type', 'both')
 
