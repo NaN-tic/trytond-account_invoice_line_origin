@@ -2,7 +2,7 @@
 #The COPYRIGHT file at the top level of this repository contains
 #the full copyright notices and license terms.
 from datetime import datetime
-from trytond.model import fields
+from trytond.model import fields, Model
 from trytond.pool import Pool, PoolMeta
 from trytond.transaction import Transaction
 from sql import Cast, Literal, operators
@@ -36,9 +36,9 @@ class InvoiceLine(metaclass=PoolMeta):
             }
 
     def get_origin_reference(self, name):
-        if self.origin:
+        if self.origin and isinstance(self.origin, Model):
             origin = self.origin
-            parent = self.origin_reference_models().get(self.origin.__name__)
+            parent = self.origin_reference_models().get(origin.__name__)
             if not parent:
                 return
 
