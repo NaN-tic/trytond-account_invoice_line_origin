@@ -49,7 +49,9 @@ class InvoiceLine(metaclass=PoolMeta):
             if name.endswith('reference'):
                 if (hasattr(source, 'number')
                         and hasattr(source, 'reference')):
-                    references = [source.number]
+                    references = []
+                    if source.number:
+                        references.append(source.number)
                     if source.reference:
                         references.append(source.reference)
                     reference = ' / '.join(references)
