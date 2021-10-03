@@ -16,14 +16,12 @@ Imports::
     ...     create_chart, get_accounts, create_tax
     >>> from trytond.modules.account_invoice.tests.tools import \
     ...     set_fiscalyear_invoice_sequences, create_payment_term
-    >>> today = datetime.date.today()
-    >>> tomorrow = today + datetime.timedelta(days=1)
-    >>> yesterday = today - datetime.timedelta(days=1)
 
 Install account_invoice_line_origin, purchase_invoice_line_standalone::
 
     >>> config = activate_modules(['account_invoice_line_origin',
     ...             'purchase_invoice_line_standalone', 'sale'])
+
 
 Create company::
 
@@ -85,6 +83,12 @@ Create payment term::
 
     >>> payment_term = create_payment_term()
     >>> payment_term.save()
+
+Compute dates::
+
+    >>> today = datetime.date.today()
+    >>> tomorrow = today + datetime.timedelta(days=1)
+    >>> yesterday = today - datetime.timedelta(days=1)
 
 Purchases::
 
