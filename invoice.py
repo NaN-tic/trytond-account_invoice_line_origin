@@ -191,9 +191,18 @@ class InvoiceLine(metaclass=PoolMeta):
         shipments = set()
         for move in self.stock_moves:
             if move.shipment:
-                if move.shipment.effective_date:
+                if move.shipment.effective_date and move.shipment.reference:
+                    key = '%s - %s - %s' % (move.shipment.rec_name,
+                        move.shipment.effective_date.strftime(format),
+                        move.shipment.reference)
+                elif (move.shipment.effective_date and
+                        not move.shipment.reference):
                     key = '%s - %s' % (move.shipment.rec_name,
                         move.shipment.effective_date.strftime(format))
+                elif (not move.shipment.effective_date and
+                        move.shipment.reference):
+                    key = '%s - %s ' % (move.shipment.rec_name,
+                        move.shipment.reference)
                 else:
                     key = '%s' % move.shipment.rec_name
                 shipments.add(key)
@@ -245,7 +254,11 @@ class InvoiceLine(metaclass=PoolMeta):
             sql_where = (Operator(shipment_out.number, value)
                 | Operator(shipment_out_return.number, value)
                 | Operator(shipment_in.number, value)
-                | Operator(shipment_in_return.number, value))
+                | Operator(shipment_in_return.number, value)
+                | Operator(shipment_out.reference, value)
+                | Operator(shipment_out_return.reference, value)
+                | Operator(shipment_in.reference, value)
+                | Operator(shipment_in_return.reference, value))
 
         query = invoice_line.join(line_move,
             condition=invoice_line.id == line_move.invoice_line).join(
