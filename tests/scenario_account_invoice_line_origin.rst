@@ -116,14 +116,12 @@ Purchases::
     >>> purchase.state
     'processing'
     >>> purchase.reload()
-    >>> len(purchase.moves)
-    3
-    >>> len(purchase.shipment_returns)
-    0
-    >>> len(purchase.invoices)
-    0
-    >>> len(purchase.invoice_lines)
-    3
+    >>> purchase.shipment_state
+    'waiting'
+    >>> purchase.invoice_state
+    'pending'
+    >>> len(purchase.moves), len(purchase.shipment_returns), len(purchase.invoices), len(purchase.invoice_lines)
+    (3, 0, 1, 3)
     >>> purchase2, = Purchase.duplicate([purchase])
     >>> purchase2.purchase_date = tomorrow
     >>> purchase2.save()
