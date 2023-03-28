@@ -4,7 +4,7 @@ The COPYRIGHT file at the top level of this repository contains the full
 copyright notices and license terms. -->
 <data>
     <xpath expr="/tree/field[@name='amount']" position="after">
-        <field name="origin_reference"/>
-        <field name="origin_date"/>
+        <field name="origin_reference" optional="0"/>
+        <field name="origin_date" optional="0"/>
     </xpath>
 </data>
