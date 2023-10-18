@@ -6,6 +6,10 @@ msgctxt "field:account.invoice.line,origin_date:"
 msgid "Origin Date"
 msgstr "Fecha origen"
 
+msgctxt "field:account.invoice.line,origin_number:"
+msgid "Origin Number"
+msgstr "Número origen"
+
 msgctxt "field:account.invoice.line,origin_reference:"
 msgid "Origin Reference"
 msgstr "Referencia origen"
