@@ -214,6 +214,10 @@ Search invoice lines::
     >>> Line = Model.get('account.invoice.line')
     >>> len(Line.find())
     18
+    >>> len(Line.find([('origin_number', '=', '2')]))
+    6
+    >>> len(Line.find([('origin_number', '=', 'ABC')]))
+    0
     >>> len(Line.find([('origin_reference', '=', '2')]))
     6
     >>> len(Line.find([('origin_reference', '=', 'ABC')]))
