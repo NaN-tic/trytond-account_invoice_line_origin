@@ -9,11 +9,11 @@ from sql import Cast, Literal, operators
 from sql.functions import Substring, Position
 from sql.operators import Like
 
-__all__ = ['InvoiceLine']
-
 
 class InvoiceLine(metaclass=PoolMeta):
     __name__ = 'account.invoice.line'
+    origin_number = fields.Function(fields.Char('Origin Number'),
+        'get_origin_reference', searcher='search_origin_reference')
     origin_reference = fields.Function(fields.Char('Origin Reference'),
         'get_origin_reference', searcher='search_origin_reference')
     origin_date = fields.Function(fields.Date('Origin Date'),
@@ -46,7 +46,9 @@ class InvoiceLine(metaclass=PoolMeta):
             if not source:
                 return
 
-            if name.endswith('reference'):
+            if name.endswith('number'):
+                return source.number if hasattr(source, 'number') else None
+            elif name.endswith('reference'):
                 if (hasattr(source, 'number')
                         and hasattr(source, 'reference')):
                     references = []
@@ -62,8 +64,7 @@ class InvoiceLine(metaclass=PoolMeta):
                 return reference
             elif name.endswith('date'):
                 parent_date = getattr(source, parent+'_date', None)
-                if parent_date:
-                    return parent_date
+                return parent_date if parent_date else None
 
     @classmethod
     def search_origin_reference(cls, name, clause):
@@ -108,6 +109,8 @@ class InvoiceLine(metaclass=PoolMeta):
 
         if name.endswith('date'):
             sql_where = (Operator(invoice.invoice_date, value))
+        elif name.endswith('number'):
+            sql_where = (Operator(invoice.number, value))
         else:
             sql_where = (Operator(invoice.reference, value))
 
@@ -140,6 +143,10 @@ class InvoiceLine(metaclass=PoolMeta):
                 sql_where = (sql_where
                     | (Operator(sale.sale_date, value))
                     )
+            elif name.endswith('number'):
+                sql_where = (sql_where
+                    | (Operator(sale.number, value))
+                    )
             else:
                 if PYSQL_CONDITION == 'and':
                     sql_where = (sql_where
@@ -168,6 +175,10 @@ class InvoiceLine(metaclass=PoolMeta):
             if name.endswith('date'):
                 sql_where = (sql_where
                     | (Operator(purchase.purchase_date, value))
+                    )
+            elif name.endswith('number'):
+                sql_where = (sql_where
+                    | (Operator(purchase.number, value))
                     )
             else:
                 if PYSQL_CONDITION == 'and':
