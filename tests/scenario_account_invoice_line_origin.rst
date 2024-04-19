@@ -153,7 +153,7 @@ Create shipment:
     ...     shipment.incoming_moves.append(incoming_move)
     >>> shipment.save()
     >>> shipment.click('receive')
-    >>> shipment.click('done')
+    >>> shipment.click('do')
     >>> shipment2 = ShipmentIn()
     >>> shipment2.supplier = supplier
     >>> for move in purchase2.moves[:-2]:
@@ -161,7 +161,7 @@ Create shipment:
     ...     shipment2.incoming_moves.append(incoming_move)
     >>> shipment2.save()
     >>> shipment2.click('receive')
-    >>> shipment2.click('done')
+    >>> shipment2.click('do')
 
 Sales::
 
