@@ -35,9 +35,17 @@ class InvoiceLine(metaclass=PoolMeta):
             'sale.line': 'sale',
             }
 
+    def _get_origin_reference_origin(self):
+        origin = self.origin
+        if not (origin and isinstance(origin, Model)):
+            return
+        if origin.__name__ == 'stock.move':
+            origin = origin.origin if isinstance(origin.origin, Model) else None
+        return origin
+
     def get_origin_reference(self, name):
-        if self.origin and isinstance(self.origin, Model):
-            origin = self.origin
+        origin = self._get_origin_reference_origin()
+        if origin:
             parent = self.origin_reference_models().get(origin.__name__)
             if not parent:
                 return
@@ -80,6 +88,10 @@ class InvoiceLine(metaclass=PoolMeta):
             Purchase = pool.get('purchase.purchase')
         except:
             Purchase = None
+        try:
+            StockMove = pool.get('stock.move')
+        except:
+            StockMove = None
 
         invoice_type = Transaction().context.get('invoice_type', 'both')
 
@@ -93,6 +105,8 @@ class InvoiceLine(metaclass=PoolMeta):
         if Purchase:
             purchase_line = PurchaseLine.__table__()
             purchase = Purchase.__table__()
+        if StockMove:
+            stock_move = StockMove.__table__()
 
         field, operator_, value = clause
 
@@ -125,6 +139,14 @@ class InvoiceLine(metaclass=PoolMeta):
             .join(invoice, 'LEFT', condition=(
                     invoice_line2.invoice == invoice.id
                     )))
+        if StockMove:
+            query = query.join(stock_move, 'LEFT', condition=(
+                    (Cast(Substring(invoice_line.origin,
+                                Position(',', invoice_line.origin)
+                        + Literal(1)), 'INTEGER') == stock_move.id)
+                    &
+                    (Like(invoice_line.origin, 'stock.move,%'))
+                    ))
 
         # sales
         if Sale and (invoice_type == 'out' or invoice_type == 'both'):
@@ -159,6 +181,41 @@ class InvoiceLine(metaclass=PoolMeta):
                         & (Operator(sale.number, value))
                         )
 
+        if (StockMove and Sale
+                and (invoice_type == 'out' or invoice_type == 'both')):
+            sale_line_move = SaleLine.__table__()
+            sale_move = Sale.__table__()
+            query = query.join(sale_line_move, 'LEFT', condition=(
+                    (Cast(Substring(stock_move.origin,
+                                Position(',', stock_move.origin)
+                        + Literal(1)), 'INTEGER') == sale_line_move.id)
+                    &
+                    (Like(stock_move.origin, 'sale.line,%'))
+                    ))
+            query = query.join(sale_move, 'LEFT', condition=(
+                    sale_line_move.sale == sale_move.id
+                    ))
+
+            if name.endswith('date'):
+                sql_where = (sql_where
+                    | (Operator(sale_move.sale_date, value))
+                    )
+            elif name.endswith('number'):
+                sql_where = (sql_where
+                    | (Operator(sale_move.number, value))
+                    )
+            else:
+                if PYSQL_CONDITION == 'and':
+                    sql_where = (sql_where
+                        | (Operator(sale_move.reference, value))
+                        | (Operator(sale_move.number, value))
+                        )
+                else:
+                    sql_where = (sql_where
+                        | (Operator(sale_move.reference, value))
+                        & (Operator(sale_move.number, value))
+                        )
+
         # purchase
         if Purchase and (invoice_type == 'in' or invoice_type == 'both'):
             query = query.join(purchase_line, 'LEFT', condition=(
@@ -190,6 +247,40 @@ class InvoiceLine(metaclass=PoolMeta):
                     sql_where = (sql_where
                         | (Operator(purchase.reference, value))
                         & (Operator(purchase.number, value))
+                        )
+        if (StockMove and Purchase
+                and (invoice_type == 'in' or invoice_type == 'both')):
+            purchase_line_move = PurchaseLine.__table__()
+            purchase_move = Purchase.__table__()
+            query = query.join(purchase_line_move, 'LEFT', condition=(
+                    (Cast(Substring(stock_move.origin,
+                                Position(',', stock_move.origin)
+                        + Literal(1)), 'INTEGER') == purchase_line_move.id)
+                    &
+                    (Like(stock_move.origin, 'purchase.line,%'))
+                    ))
+            query = query.join(purchase_move, 'LEFT', condition=(
+                    purchase_line_move.purchase == purchase_move.id
+                    ))
+
+            if name.endswith('date'):
+                sql_where = (sql_where
+                    | (Operator(purchase_move.purchase_date, value))
+                    )
+            elif name.endswith('number'):
+                sql_where = (sql_where
+                    | (Operator(purchase_move.number, value))
+                    )
+            else:
+                if PYSQL_CONDITION == 'and':
+                    sql_where = (sql_where
+                        | (Operator(purchase_move.reference, value))
+                        | (Operator(purchase_move.number, value))
+                        )
+                else:
+                    sql_where = (sql_where
+                        | (Operator(purchase_move.reference, value))
+                        & (Operator(purchase_move.number, value))
                         )
         query = query.select(invoice_line.id, where=sql_where)
 

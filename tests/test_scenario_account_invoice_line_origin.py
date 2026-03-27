@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
         # Install account_invoice_line_origin, purchase_invoice_line_standalone
         activate_modules([
             'account_invoice_line_origin', 'purchase_invoice_line_standalone',
-            'sale'
+            'sale', 'stock_consignment'
         ])
 
         # Create company
@@ -227,3 +227,24 @@ class Test(unittest.TestCase):
             len(
                 Line.find([('origin_shipment', '=', today.strftime('%m/%d/%Y'))
                            ])), 9)
+
+        # Origin reference from stock move origin (sale line)
+        Invoice = Model.get('account.invoice')
+        Move = Model.get('stock.move')
+        invoice = Invoice()
+        invoice.company = company
+        invoice.party = customer
+        invoice.type = 'out'
+        invoice.account = accounts['receivable']
+        invoice.currency = company.currency
+        invoice.payment_term = payment_term
+        invoice_line = invoice.lines.new()
+        invoice_line.type = 'line'
+        invoice_line.product = product
+        invoice_line.quantity = 1.0
+        invoice_line.unit_price = Decimal('10')
+        move = Move(id=sale2.moves[0].id)
+        invoice_line.origin = move
+        invoice.save()
+        invoice_line, = invoice.lines
+        self.assertIn('ABC', invoice_line.origin_reference)
