@@ -275,17 +275,29 @@ class InvoiceLine(metaclass=PoolMeta):
             condition=invoice_line.id == line_move.invoice_line).join(
             move, condition=move.id == line_move.stock_move)
         query = query.join(shipment_out, 'LEFT',
-            condition=Cast(Substring(move.shipment, Position(
-            ',', move.shipment) + Literal(1)), 'INTEGER') == shipment_out.id)
+            condition=(
+                (Cast(Substring(move.shipment, Position(
+                    ',', move.shipment) + Literal(1)), 'INTEGER')
+                    == shipment_out.id)
+                & Like(move.shipment, 'stock.shipment.out,%')))
         query = query.join(shipment_out_return, 'LEFT',
-            condition=Cast(Substring(move.shipment, Position(
-            ',', move.shipment) + Literal(1)), 'INTEGER') == shipment_out_return.id)
+            condition=(
+                (Cast(Substring(move.shipment, Position(
+                    ',', move.shipment) + Literal(1)), 'INTEGER')
+                    == shipment_out_return.id)
+                & Like(move.shipment, 'stock.shipment.out.return,%')))
         query = query.join(shipment_in, 'LEFT',
-            condition=Cast(Substring(move.shipment, Position(
-            ',', move.shipment) + Literal(1)), 'INTEGER') == shipment_in.id)
+            condition=(
+                (Cast(Substring(move.shipment, Position(
+                    ',', move.shipment) + Literal(1)), 'INTEGER')
+                    == shipment_in.id)
+                & Like(move.shipment, 'stock.shipment.in,%')))
         query = query.join(shipment_in_return, 'LEFT',
-            condition=Cast(Substring(move.shipment, Position(
-            ',', move.shipment) + Literal(1)), 'INTEGER') == shipment_in_return.id)
+            condition=(
+                (Cast(Substring(move.shipment, Position(
+                    ',', move.shipment) + Literal(1)), 'INTEGER')
+                    == shipment_in_return.id)
+                & Like(move.shipment, 'stock.shipment.in.return,%')))
         query = query.select(invoice_line.id, where=sql_where)
 
         return [('id', 'in', query)]
