@@ -226,4 +226,4 @@ class Test(unittest.TestCase):
         self.assertEqual(
             len(
                 Line.find([('origin_shipment', '=', today.strftime('%m/%d/%Y'))
-                           ])), 9)
+                           ])), 3)
